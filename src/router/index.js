@@ -1,15 +1,13 @@
-import Vue from 'vue'
-import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
+import Vue from "vue";
+import Router from "vue-router";
 
-Vue.use(Router)
+import Auth from "./auth";
+import Dashboard from "./dashboard";
+import Profile from "./profile";
+
+Vue.use(Router);
 
 export default new Router({
-  routes: [
-    {
-      path: '/',
-      name: 'HelloWorld',
-      component: HelloWorld
-    }
-  ]
-})
+  routes: [...Auth, ...Dashboard, ...Profile],
+  mode: "history"
+});
