@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <h1 class="display-3">Hello, <span class="blue--text">Parth.</span></h1>
+    <h1 class="display-3">Hello, <span class="blue--text">{{userProfile.name.split(' ')[0]}}.</span></h1>
     <h2 class="headline"> Welcome to your Profile.</h2>
     <v-layout row wrap>
       <v-flex sm3 class="mt-5">
@@ -24,7 +24,7 @@
             <h4 class="title font-weight-regular">Email: <span class="blue--text text--darken-3">{{userProfile.email}}</span> </h4>
           </v-flex>
           <v-flex xs12 sm6 class="pb-3">
-            <h4 class="title font-weight-regular">Phone No: <span class="blue--text text--darken-3">+91-{{userProfile.pno}}</span> </h4>
+            <h4 class="title font-weight-regular">Mobile No: <span class="blue--text text--darken-3">+91-{{userProfile.pno}}</span> </h4>
           </v-flex>
           <v-flex xs12 sm6 class="pb-3">
             <h4 class="title font-weight-regular">GPA: <span class="blue--text text--darken-3">{{userProfile.gpa}}</span> </h4>
