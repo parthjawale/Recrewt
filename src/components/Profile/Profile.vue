@@ -113,6 +113,7 @@
 </template>
 
 <script>
+import { auth } from "@/scripts/firebase";
 export default {
   data() {
     return {
@@ -182,6 +183,14 @@ export default {
         pno: "9967346462"
       }
     };
+  },
+  created() {
+    var self = this;
+    auth.onAuthStateChanged(function(user) {
+      if (!user) {
+        self.$router.push("/login");
+      }
+    });
   },
   methods: {
     showDets(params) {
