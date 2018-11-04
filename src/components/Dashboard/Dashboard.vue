@@ -3,26 +3,35 @@
     <h2 class="display-2 text-xs-center font-weight-thin">Dashboard</h2>
     <v-layout row wrap class="mt-5">
       <v-flex xs3 class="pr-3">
-        <h4 class="title font-weight-regular pb-3" style="padding-left: 18px;">Constraints</h4>
+        <h4 class="title font-weight-regular pb-3" style="padding-left: 18px;">
+          Constraints
+          <v-icon right>filter_list</v-icon>
+          </h4>
         <div>
           <v-expansion-panel expand v-model="constraints.panel" class="elevation-0 transparent">
             <v-expansion-panel-content ripple>
               <div slot="header" class="subheading">Job Area</div>
-              <v-checkbox style="padding-left: 24px;" v-model="constraints.type" color="red" label="Design" value="Design"></v-checkbox>
-              <v-checkbox style="padding-left: 24px;" v-model="constraints.type" color="red" label="Web Development" value="Web Development"></v-checkbox>
+              <v-radio-group v-model="constraints.type">
+                <v-radio style="padding-left: 24px;" color="red" label="Design" value="Design"></v-radio>
+                <v-radio style="padding-left: 24px;" color="red" label="Web Development" value="Web Development"></v-radio>
+              </v-radio-group>
             </v-expansion-panel-content>
             <v-expansion-panel-content ripple>
               <div slot="header" class="subheading">Duration</div>
               <v-radio-group v-model="constraints.duration">
-                <v-radio style="padding-left: 24px;" color="red" label="1 Month" value="1"></v-radio>
-                <v-radio style="padding-left: 24px;" color="red" label="2 Months" value="2"></v-radio>
+                <v-radio style="padding-left: 24px;" color="red" label="1 Month" value="1 Month"></v-radio>
+                <v-radio style="padding-left: 24px;" color="red" label="2 Months" value="2 Months"></v-radio>
               </v-radio-group>
             </v-expansion-panel-content>
           </v-expansion-panel>
+          <div v-if="constraints.panel[0] || constraints.panel[1]">
+            <v-btn class="text-xs-center mx-auto d-block" color="blue" @click="findJobs" flat>Apply Constraints</v-btn>
+            <v-btn class="text-xs-center mx-auto d-block" color="red" @click="clearConstraints" flat>Clear Constraints</v-btn>
+          </div>
         </div>
       </v-flex>
       <v-flex xs9 class="pl-3">
-        <h4 class="title font-weight-regular pb-3">Job Offers</h4>
+        <h4 class="title font-weight-regular pb-3">Jobs Available</h4>
         <v-card class="mb-4" v-for="(job,index) in jobs" :key="index">
           <v-card-title>
             <h2 class="font-weight-regular headline">
@@ -53,10 +62,10 @@
           <v-card-actions>
             <v-layout d-flex align-content-space-between>
               <div style="width: 40px;">
-                <v-btn flat color="black" @click="show=!show">
+                <v-btn flat color="black" @click="job.show=!job.show">
                   More Details
                   <v-icon>
-                    {{show ? 'expand_less' : 'expand_more'}}
+                    {{job.show ? 'expand_less' : 'expand_more'}}
                   </v-icon>
                 </v-btn>
               </div>
@@ -66,7 +75,7 @@
             </v-layout>
           </v-card-actions>
           <v-slide-y-transition>
-            <v-card-text v-show="show">
+            <v-card-text v-show="job.show">
               {{job.details}}
             </v-card-text>
           </v-slide-y-transition>
@@ -81,13 +90,17 @@ export default {
   data() {
     return {
       show: false,
+      noConstraints: true,
       constraints: {
         noChange: true,
-        type: [],
+        type: null,
         duration: null,
         panel: [true, true]
       },
-      jobs: [{}],
+      filters: {
+        panel: [false]
+      },
+      jobs: [],
       availableJobs: [
         {
           id: 1,
@@ -96,8 +109,8 @@ export default {
           positionsAvailable: 1,
           lastDate: "26th Nov",
           show: false,
-          tags: ["design"],
-          estimatedDuration: "6 Months",
+          tag: "Design",
+          estimatedDuration: "2 Months",
           details:
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
         },
@@ -108,7 +121,7 @@ export default {
           positionsAvailable: 1,
           lastDate: "26th Nov",
           show: false,
-          tags: ["web"],
+          tag: "Web Development",
           estimatedDuration: "6 Months",
           details:
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -116,17 +129,34 @@ export default {
       ]
     };
   },
-  mounted() {
-    this.findJobs();
+  created() {
+    this.jobs = this.availableJobs;
   },
   methods: {
-    findJobs: () => {
-      console.log(this.constraints.noChange);
-      if (
-        this.constraints.type.length == 0 &&
-        this.constraints.duration == null
-      )
-        return this.availableJobs;
+    findJobs() {
+      if (this.constraints.type == null && this.constraints.duration == null)
+        this.jobs = this.availableJobs;
+      else {
+        this.jobs = this.availableJobs.filter(job => {
+          if (this.constraints.duration == null)
+            return job.tag == this.constraints.type;
+          else {
+            console.log("in");
+            if (this.constraints.type == null)
+              return job.estimatedDuration == this.constraints.duration;
+            else
+              return (
+                job.tag == this.constraints.type &&
+                job.estimatedDuration == this.constraints.duration
+              );
+          }
+        });
+      }
+    },
+    clearConstraints() {
+      this.constraints.type = null;
+      this.constraints.duration = null;
+      this.jobs = this.availableJobs;
     }
   }
 };

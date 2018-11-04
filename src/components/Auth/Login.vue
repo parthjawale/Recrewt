@@ -17,7 +17,6 @@
           name="input-password"
           label="Password"
           hint="At least 6 characters"
-          counter
           required
           @click:append="showPassword = !showPassword"
         ></v-text-field>

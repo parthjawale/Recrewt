@@ -7,6 +7,7 @@
           <v-flex class="px-2"  xs12 sm6>
             <v-text-field
               v-model="name"
+              :rules="[rules.required]"
               required
               label="Name"
             ></v-text-field>
@@ -14,7 +15,7 @@
           <v-flex class="px-2" xs12 sm6>
             <v-text-field
               v-model="email"
-              
+              :rules="rules.emailRules"
               label="E-mail"
               required
             ></v-text-field>
@@ -22,6 +23,7 @@
           <v-flex class="px-2" xs12 sm6>
             <v-text-field
               v-model="password"
+              :rules="[rules.required]"
               :append-icon="showPassword ? 'visibility_off' : 'visibility'"
               :type="showPassword ? 'text' : 'password'"
               name="input-password"
@@ -34,6 +36,7 @@
           <v-flex class="px-2" xs12 sm6>
             <v-text-field
               v-model="repassword"
+              :rules="[rules.required]"
               :append-icon="showPassword ? 'visibility_off' : 'visibility'"
               :type="showPassword ? 'text' : 'password'"
               name="input-password"
@@ -47,9 +50,10 @@
             <v-text-field
               v-model="pno"
               type="number"
+              :rules="[rules.required]"
               name="input-password"
-              label="Phone Number"
-              hint="At least 6 characters"
+              label="Mobile Number"
+              counter="10"
               required
               @click:append="showPassword = !showPassword"
             ></v-text-field>
