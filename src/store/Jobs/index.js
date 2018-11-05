@@ -1,9 +1,10 @@
+import { firestore, auth } from "@/scripts/firebase";
+
 export default {
   state: {
     jobs: [
       {
-        id: 1,
-        company: "Infosys Tech Solutions",
+        name: "Infosys Tech Solutions",
         requiredPosition: "Software Tester",
         positionsAvailable: 1,
         lastDate: "26th Nov",
@@ -23,12 +24,69 @@ export default {
   mutations: {
     setJobs: (state, payload) => {
       state.jobs = payload;
+    },
+    addJob: (state, payload) => {
+      state.jobs.push(payload);
     }
   },
   actions: {
-    getJobs: ({ commit }) => {
+    getJobs: async ({ commit }) => {
       //Firebase code here
+      var jobs = [];
+      await firestore
+        .collection("jobs")
+        .get()
+        .then(function(querySnapshot) {
+          querySnapshot.forEach(function(child) {
+            jobs.push(child.data());
+          });
+          commit("setJobs", jobs);
+        });
+
       // commit () after firebase async code.
+    },
+    addJob: async ({}, payload) => {
+      payload.status = "Posted";
+      let message;
+      let error = false;
+      var jobsRef = firestore.collection("jobs").doc();
+      await firestore
+        .collection("jobs")
+        .doc(jobsRef.id)
+        .set(payload)
+        .then(function() {
+          message = "Your Job has been posted. Thank you.";
+          error = false;
+          firestore
+            .collection("users")
+            .doc(payload.user)
+            .get()
+            .then(function(doc) {
+              var data = doc.data();
+              var postedJobs = data.postedJobs;
+              if (postedJobs != undefined || postedJobs != null) {
+                postedJobs.push(jobsRef.id);
+              } else {
+                postedJobs = [];
+                postedJobs.push(jobsRef.id);
+              }
+              firestore
+                .collection("users")
+                .doc(payload.user)
+                .update({
+                  postedJobs: postedJobs
+                });
+            });
+        })
+        .catch(function(error) {
+          error = true;
+          message = error.message;
+        });
+      var response = {
+        error: error,
+        message: message
+      };
+      return response;
     }
   }
 };
