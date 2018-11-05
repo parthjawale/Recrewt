@@ -5,7 +5,7 @@
       top
     >
       <!-- Hello {{name.split(" ")[0]}}. Thank you for signing up. -->
-      {{message}}
+      {{ response.message }}
       <v-btn
         color="pink"
         flat
@@ -52,7 +52,7 @@ export default {
       showPassword: false,
       password: "",
       loading: false,
-      message: "",
+      response: "",
       email: "",
       snackbar: false,
       rules: {
@@ -83,14 +83,14 @@ export default {
       };
       this.loading = true;
       try {
-        this.message = await this.$store.dispatch("loginUser", payload);
+        this.response = await this.$store.dispatch("loginUser", payload);
       } catch (ex) {
         alert(ex);
       }
       this.loading = false;
       this.snackbar = true;
       // this.clear();
-      this.$router.push("/dashboard");
+      if (!this.response.errorValue) this.$router.push("/dashboard");
     },
     clear() {
       this.password = "";

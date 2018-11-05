@@ -4,8 +4,7 @@
       v-model="snackbar"
       top
     >
-      <!-- Hello {{name.split(" ")[0]}}. Thank you for signing up. -->
-      {{message}}
+      {{ response.message }}
       <v-btn
         color="pink"
         flat
@@ -73,8 +72,49 @@
               label="Mobile Number"
               counter="10"
               required
-              @keyup.enter="signUp"
             ></v-text-field>
+          </v-flex>
+          <v-flex class="px-2" xs12 sm6>
+            <v-text-field
+              v-model="age"
+              type="number"
+              :rules="[rules.required]"
+              name="input-password"
+              hint="Enter Your Age"
+              label="Age"
+              required
+            ></v-text-field>
+          </v-flex>
+          <v-flex class="px-2" xs12 sm6>
+            <v-text-field
+              v-model="cgpa"
+              type="number"
+              :rules="[rules.required]"
+              name="input-password"
+              hint="Enter Your Cumulative Grade Point Average"
+              label="CGPA"
+              required
+            ></v-text-field>
+          </v-flex>
+          <v-flex class="px-2" xs12 sm6>
+            <v-text-field
+              v-model="twelfthPercent"
+              type="number"
+              :rules="[rules.required]"
+              name="input-password"
+              append-icon="%"
+              hint="Enter Your 12th Percentage"
+              label="12th Percentage"
+              required
+            ></v-text-field>
+          </v-flex>
+          <v-flex class="px-2" xs12>
+            <v-autocomplete
+            v-model="specialisation"
+            :items="items"
+            :rules="[rules.required]"
+            label="Select your area of expertise."
+          ></v-autocomplete>
           </v-flex>
         </v-layout>
         <v-btn type="submit" :loading ="loading" :disabled="loading">Submit</v-btn>
@@ -93,9 +133,13 @@ export default {
       loading: false,
       showPassword: false,
       snackbar: false,
-      password: "",
-      message: "",
+      response: "",
       name: "",
+      password: "",
+      age: null,
+      cgpa: null,
+      specialisation: null,
+      twelfthPercent: null,
       pno: "",
       repassword: "",
       email: "",
@@ -112,16 +156,17 @@ export default {
           value == this.repassword || "Both Passwords must be same.",
         repassword: value =>
           value == this.password || "Both Passwords must be same."
-      }
+      },
+      items: ["Design", "Web Development", "Content Writing"]
     };
   },
   created() {
-    var self = this;
-    auth.onAuthStateChanged(function(user) {
-      if (user) {
-        self.$router.push("/dashboard");
-      }
-    });
+    // var self = this;
+    // auth.onAuthStateChanged(function(user) {
+    //   if (user) {
+    //     self.$router.push("/dashboard");
+    //   }
+    // });
   },
   methods: {
     async signUp() {
@@ -131,18 +176,24 @@ export default {
         name: this.name,
         password: this.password,
         pno: this.pno,
-        email: this.email
+        email: this.email,
+        age: this.age,
+        cgpa: this.cgpa,
+        twelfthPercent: this.twelfthPercent,
+        specialisation: this.specialisation
       };
       this.loading = true;
       try {
-        this.message = await this.$store.dispatch("signUpUser", payload);
+        this.response = await this.$store.dispatch("signUpUser", payload);
+        console.log(this.response);
       } catch (ex) {
         alert(ex);
       }
       this.loading = false;
       this.snackbar = true;
-      // this.clear();
-      this.$router.push("/dashboard");
+      if (this.response.errorValue) {
+        this.$router.push("/dashboard");
+      }
     },
     clear() {
       this.name = "";

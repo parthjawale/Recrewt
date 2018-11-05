@@ -15,13 +15,18 @@ export default {
     }
   },
   actions: {
+    getUser: ({ commit }) => {
+      commit("setUser", auth.currentUser);
+    },
     loginUser: async ({ commit }, payload) => {
       let message;
+      let errorValue = true;
       try {
         await auth
           .signInWithEmailAndPassword(payload.email, payload.password)
           .then(function(user) {
             commit("setUser", user.user);
+            errorValue = false;
             message =
               "Hello " +
               user.user.displayName.split(" ")[0] +
@@ -43,7 +48,31 @@ export default {
       } catch (ex) {
         alert(ex);
       }
-      return message;
+      var response = {
+        errorValue: errorValue,
+        message: message
+      };
+      return response;
+    },
+    saveNewDetails: async ({ commit }, payload) => {
+      let message;
+      let error = false;
+      await firestore
+        .collection("users")
+        .doc(payload.uid)
+        .update(payload)
+        .then(function() {
+          message = "Details updated successfully.";
+          commit("setUser", payload);
+        })
+        .catch(function(error) {
+          message = error.message;
+        });
+      var response = {
+        message: message,
+        error: error
+      };
+      return response;
     },
     signUpUser: async ({ commit }, payload) => {
       let noError = true;
@@ -84,10 +113,13 @@ export default {
         alert(ex);
       }
       if (noError)
-        return (
-          "Hello " + payload.name.split(" ")[0] + ". Thank you for signing up."
-        );
-      else return message;
+        message =
+          "Hello " + payload.name.split(" ")[0] + ". Thank you for signing up.";
+      var response = {
+        errorValue: noError,
+        message: message
+      };
+      return response;
     }
   }
 };
