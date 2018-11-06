@@ -77,6 +77,7 @@ export default {
     signUpUser: async ({ commit }, payload) => {
       let noError = true;
       let message;
+      payload.college = "Manipal University Jaipur";
       try {
         await auth
           .createUserWithEmailAndPassword(payload.email, payload.password)
@@ -89,6 +90,7 @@ export default {
                   displayName: payload.name
                 })
                 .then(function() {
+                  payload.uid = user.user.uid;
                   firestore
                     .collection("users")
                     .doc(user.user.uid)
