@@ -92,6 +92,7 @@ export default {
         message: "You've applied for this job successfully.",
         error: false
       };
+      var f = 0;
       await firestore
         .collection("jobs")
         .doc(payload.jobId)
@@ -106,6 +107,27 @@ export default {
               appliedUsers = [];
             } else {
               appliedUsers = doc.data().appliedUsers;
+              for (var i in appliedUsers) {
+                if (appliedUsers[i].user == payload.user) {
+                  response.message = "You've already applied for this job.";
+                  response.error = true;
+                  return response;
+                }
+              }
+            }
+            if (
+              doc.data().approvedUsers != undefined &&
+              doc.data().approvedUsers != null &&
+              doc.data().approvedUsers.length != 0
+            ) {
+              for (var i in doc.data().approvedUsers) {
+                if (doc.data().approvedUsers[i].user == payload.user) {
+                  response.message =
+                    "You've been approved for this job already.";
+                  response.error = true;
+                  return response;
+                }
+              }
             }
             var child = {
               user: payload.user,
@@ -125,20 +147,21 @@ export default {
                     .doc(payload.user)
                     .get()
                     .then(
-                      function() {
+                      function(userDoc) {
                         var appliedJobs = [];
                         if (
-                          doc.data().appliedJobs != undefined &&
-                          doc.data().appliedJobs != null
+                          userDoc.data().appliedJobs != undefined &&
+                          userDoc.data().appliedJobs != null &&
+                          userDoc.data().appliedJobs.length != 0
                         ) {
-                          appliedJobs = doc.data().appliedJobs;
+                          appliedJobs = userDoc.data().appliedJobs;
+                        } else {
+                          appliedJobs = [];
                         }
                         var childT = {
                           jobId: payload.jobId,
                           answer: payload.answer
                         };
-                        console.log(appliedJobs);
-                        console.log(childT);
                         appliedJobs.push(childT);
                         firestore
                           .collection("users")
@@ -173,6 +196,94 @@ export default {
           function(e) {
             response.message = e.message;
             response.error = true;
+          }
+        );
+      return response;
+    },
+    approveCandidate({}, payload) {
+      var i;
+      var approvedUsers = [];
+      var response = {
+        message: payload.user.name.split(" ")[0] + " has been approved.",
+        error: false
+      };
+      if (
+        payload.job.approvedUsers != undefined &&
+        payload.job.approvedUsers != null
+      ) {
+        approvedUsers = payload.job.approvedUsers;
+        for (i in approvedUsers) {
+          if (approvedUsers[i].user == payload.user.uid) {
+            response.error = true;
+            response.message = "This user has already been approved.";
+            return response;
+          }
+        }
+      }
+      for (i in payload.job.appliedUsers) {
+        if (payload.job.appliedUsers[i].user == payload.user.uid) break;
+      }
+      var appliedUsers = payload.job.appliedUsers.filter(
+        user => user.user !== payload.user.uid
+      );
+      approvedUsers.push(payload.job.appliedUsers[i]);
+      firestore
+        .collection("jobs")
+        .doc(payload.job.jobId)
+        .update({
+          approvedUsers: approvedUsers,
+          appliedUsers: appliedUsers
+        })
+        .then(
+          function() {
+            firestore
+              .collection("users")
+              .doc(payload.user.uid)
+              .get()
+              .then(
+                function(doc) {
+                  var data = doc.data();
+                  var approvedJobs = [];
+                  if (
+                    data.approvedJobs != undefined &&
+                    data.approvedJobs != null &&
+                    data.approvedJobs.length != 0
+                  ) {
+                    approvedJobs = data.approvedJobs;
+                  }
+                  var child = payload.job.appliedUsers[i];
+                  var appliedJobs = data.appliedJobs.filter(
+                    job => job.jobId !== payload.job.jobId
+                  );
+                  delete child["user"];
+                  child.jobId = payload.job.jobId;
+                  approvedJobs.push(child);
+                  firestore
+                    .collection("users")
+                    .doc(payload.user.uid)
+                    .update({
+                      approvedJobs: approvedJobs,
+                      appliedJobs: appliedJobs
+                    })
+                    .then(
+                      function() {
+                        response.error = false;
+                      },
+                      function(error) {
+                        response.error = true;
+                        response.message = error.message;
+                      }
+                    );
+                },
+                function(error) {
+                  response.error = true;
+                  response.message = error.message;
+                }
+              );
+          },
+          function(error) {
+            response.error = true;
+            response.message = error.message;
           }
         );
       return response;
