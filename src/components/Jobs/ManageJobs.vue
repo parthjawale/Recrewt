@@ -220,7 +220,7 @@
                   </v-card-text>
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue" flat disabled="true">Already Approved</v-btn>
+                    <v-btn color="blue" flat disabled>Already Approved</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-flex>
@@ -235,6 +235,8 @@
           </v-card-title>
           <v-card-text>
             <p class="subheading mb-0">By clicking "Yes, I do" you agree that you'll hire {{ approveDialog.user.name.split(' ')[0] }} for the aforementioned job. There's no turning back from this.</p>
+            <br>
+            <small>* Please contact the candidate before approving him/her.</small>
           </v-card-text>
           <v-divider></v-divider>
           <v-card-actions>
@@ -265,7 +267,7 @@ export default {
       response: "",
       alert: false,
       approveDialog: {
-        switch: false,
+        switch: true,
         user: null
       },
       preloaderLoading: true,
