@@ -1,8 +1,33 @@
 <template>
 <div class="App">
   <v-app>
-      <v-toolbar fixed dark color="primary">
-        <v-toolbar-side-icon></v-toolbar-side-icon>
+      <v-navigation-drawer
+        class="navigation-drawer"
+        fixed
+        v-model="drawer"
+      >
+        <v-list class="pa-4">
+          <v-list-tile avatar v-if="user != null">
+            <v-list-tile-avatar>
+              <img src="/static/images/profile/profile_man.png">
+            </v-list-tile-avatar>
+            <v-list-tile-content>
+              <v-list-tile-title class="font-weight-regular title">{{ user.displayName }}</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-list-tile avatar v-else>
+            <v-list-tile-avatar>
+              <img src="/static/images/profile/profile_man.png" style="height:60px;width:60px;">
+            </v-list-tile-avatar>
+            <v-list-tile-content>
+              <v-list-tile-title class="font-weight-regular subheading">Please Login</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+        </v-list>
+        <v-divider></v-divider>
+      </v-navigation-drawer>
+      <v-toolbar fixed dark flat color="primary" style="z-index:999;">
+        <v-toolbar-side-icon @click="drawer = !drawer"></v-toolbar-side-icon>
 
         <v-toolbar-title class="white--text">ReCrewt</v-toolbar-title>
 
@@ -18,7 +43,7 @@
           <v-btn flat v-if="isSignedIn" @click="logout">Logout</v-btn>
         </v-toolbar-items>
       </v-toolbar>
-      <main class="toolbar-fixing">
+      <main class="toolbar-fixing" :style="drawer ? drawerOpen : drawerClosed">
         <router-view/>
       </main>
   </v-app>
@@ -31,14 +56,24 @@ export default {
   name: "App",
   data() {
     return {
-      isSignedIn: false
+      isSignedIn: false,
+      drawer: true,
+      user: null,
+      drawerOpen: {
+        paddingLeft: "300px"
+      },
+      drawerClosed: {
+        paddingLeft: "0px"
+      }
     };
   },
   created() {
     var self = this;
     auth.onAuthStateChanged(function(user) {
-      if (user) self.isSignedIn = true;
-      else self.isSignedIn = false;
+      if (user) {
+        self.isSignedIn = true;
+        self.user = user;
+      } else self.isSignedIn = false;
     });
   },
   methods: {
@@ -66,11 +101,17 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 .toolbar-fixing {
-  margin-top: 56px;
+  padding-top: 64px;
+}
+.navigation-drawer {
+  margin-top: 64px !important;
 }
 @media screen and (max-width: 960px) {
   .toolbar-fixing {
-    margin-top: 48px;
+    padding-top: 56px;
+  }
+  .navigation-drawer {
+    margin-top: 56px !important;
   }
 }
 </style>

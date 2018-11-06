@@ -78,7 +78,7 @@
             <v-text-field
               v-model="age"
               type="number"
-              :rules="[rules.required]"
+              :rules="[rules.required, rules.ageMin, rules.ageMax]"
               name="input-password"
               hint="Enter Your Age"
               label="Age"
@@ -89,7 +89,7 @@
             <v-text-field
               v-model="cgpa"
               type="number"
-              :rules="[rules.required]"
+              :rules="[rules.required, rules.cgpa]"
               name="input-password"
               hint="Enter Your Cumulative Grade Point Average"
               label="CGPA"
@@ -100,7 +100,7 @@
             <v-text-field
               v-model="twelfthPercent"
               type="number"
-              :rules="[rules.required]"
+              :rules="[rules.required, rules.twelfth]"
               name="input-password"
               append-icon="%"
               hint="Enter Your 12th Percentage"
@@ -155,7 +155,12 @@ export default {
         password: value =>
           value == this.repassword || "Both Passwords must be same.",
         repassword: value =>
-          value == this.password || "Both Passwords must be same."
+          value == this.password || "Both Passwords must be same.",
+        cgpa: v => v <= 10.0 || "CGPA must be less than or equal to 10.0",
+        twelfth: v =>
+          v <= 100.0 || "Percentage must be less than or equal to 100%",
+        ageMin: v => v >= 18 || "You must be atleast greater than 18 to work.",
+        ageMax: v => v <= 100 || "You are too old."
       },
       items: ["Design", "Web Development", "Content Writing"]
     };
