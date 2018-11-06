@@ -45,8 +45,11 @@
         <v-flex xs12 sm6 class="py-2">
           <p class="title font-weight-regular">Duration: <span class="blue--text text--darken-3">{{ job.estimatedDuration }} Months</span></p>
         </v-flex>
+        <v-flex xs12 sm6 class="py-2">
+          <p class="title font-weight-regular">Job Status: <span class="blue--text text--darken-3 text-capitalize">{{ job.status }}</span></p>
+        </v-flex>
       </v-layout>
-      <v-layout row wrap>
+      <v-layout row wrap v-if="job.status != 'deleted'">
         <v-flex xs12>
           <h3 class="headline font-weight-regular text-xs-center mt-4 pb-4">Applications</h3>
         </v-flex>
@@ -139,7 +142,7 @@
                         <h2 class="title font-weight-regular">Why do you want this Job?</h2>
                         <br>
                         <h3 class="body-1 font-weight-regular">ANSWER:<br>
-                        <span class="subheading font-weight-regular">{{ getAns(user.uid), 'appliedUsers' }}</span>
+                        <span class="subheading font-weight-regular">{{ getAns(user.uid, 'appliedUsers') }}</span>
                         </h3>
                       </v-flex>
                     </v-layout>
@@ -364,8 +367,9 @@ export default {
     getAns(uid, type) {
       if (type == "appliedUsers") {
         for (var i in this.job.appliedUsers) {
-          if (this.job.appliedUsers[i].user == uid)
+          if (this.job.appliedUsers[i].user == uid) {
             return this.job.appliedUsers[i].answer;
+          }
         }
       } else if (type == "approvedUsers") {
         for (var i in this.job.approvedUsers) {

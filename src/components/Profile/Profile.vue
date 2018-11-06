@@ -81,6 +81,16 @@
         <div class="pt-4 text-xs-center" v-if="det.detArr == null || det.detArr.length == 0">
           <h4 class="headline">No Jobs Yet.</h4>
         </div>
+        <v-flex xs12>
+          <v-alert
+            :value="deleteAlert"
+            type="info"
+            class="mb-4"
+            outline
+          >
+            Your job has been successfully deleted. Please reload to see changes.
+          </v-alert>
+        </v-flex>
         <v-card class="mb-4" v-for="(jobChild,index) in det.detArr" :key="index">
           <v-card-title>
             <h2 class="font-weight-regular headline">
@@ -120,6 +130,11 @@
                 </v-btn>
               </div>
               <v-spacer></v-spacer>
+              <div style="width: 40px;" class="text-xs-right">
+                <v-btn flat color="red" v-if="det.params == 'postedJobs'" @click="openDeleteDialog(jobChild)">
+                  Delete Job
+                </v-btn>
+              </div>
               <div style="width: 40px;" class="text-xs-right">
                 <v-btn flat color="blue" v-if="det.params == 'postedJobs'" :to="`/managejob/${jobChild.jobId}`">
                   Manage Applications
@@ -217,6 +232,24 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+      <v-dialog width="500" persistent v-model="deleteJobDialog.switch" v-if="deleteJobDialog.job != null">
+        <v-card>
+          <v-card-title class="grey lighten-2">
+            <h2 class="headline font-weight-regular">Delete {{ deleteJobDialog.job.name }}</h2>
+          </v-card-title>
+          <v-card-text>
+            <p class="subheading mb-0">By clicking 'Yes' you would be permanently deleting this job. There's no turning back from this.</p>
+            <br>
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn flat color="red" :disabled="deleteLoading" @click="closeDeleteDialog()">No, Please take me back.</v-btn>
+            <v-btn color="green" flat @click="deleteJob()" :disabled="deleteLoading">Yes</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-container>
   </div>
 </template>
@@ -239,6 +272,12 @@ export default {
       response: "",
       loading: false,
       snackbar: false,
+      deleteAlert: false,
+      deleteJobDialog: {
+        switch: false,
+        job: null
+      },
+      deleteLoading: false,
       rules: {
         required: value => !!value || "Required.",
         min: v => v.length >= 6 || "Min 6 characters",
@@ -276,18 +315,20 @@ export default {
               .get()
               .then(function(querySnapshot) {
                 querySnapshot.forEach(function(child) {
-                  for (var i in self.userProfile.postedJobs) {
-                    if (self.userProfile.postedJobs[i] == child.id)
-                      self.postedJobs.push(child.data());
-                  }
-                  for (var i in self.userProfile.appliedJobs) {
-                    if (self.userProfile.appliedJobs[i].jobId == child.id) {
-                      self.appliedJobs.push(child.data());
+                  if (child.data().status != "deleted") {
+                    for (var i in self.userProfile.postedJobs) {
+                      if (self.userProfile.postedJobs[i] == child.id)
+                        self.postedJobs.push(child.data());
                     }
-                  }
-                  for (var i in self.userProfile.approvedJobs) {
-                    if (self.userProfile.approvedJobs[i].jobId == child.id)
-                      self.approvedJobs.push(child.data());
+                    for (var i in self.userProfile.appliedJobs) {
+                      if (self.userProfile.appliedJobs[i].jobId == child.id) {
+                        self.appliedJobs.push(child.data());
+                      }
+                    }
+                    for (var i in self.userProfile.approvedJobs) {
+                      if (self.userProfile.approvedJobs[i].jobId == child.id)
+                        self.approvedJobs.push(child.data());
+                    }
                   }
                 });
                 self.preloaderLoading = false;
@@ -297,6 +338,25 @@ export default {
     });
   },
   methods: {
+    openDeleteDialog(job) {
+      this.deleteJobDialog.switch = true;
+      this.deleteJobDialog.job = job;
+    },
+    closeDeleteDialog() {
+      this.deleteJobDialog.switch = false;
+      this.deleteJobDialog.job = null;
+    },
+    async deleteJob() {
+      this.deleteLoading = true;
+      this.response = await this.$store.dispatch(
+        "deleteJob",
+        this.deleteJobDialog.job
+      );
+      this.deleteLoading = false;
+      this.snackbar = true;
+      this.deleteAlert = true;
+      if (!this.response.error) this.closeDeleteDialog();
+    },
     showDets(params) {
       if (this.det.show && this.det.params == params) {
         this.det.show = false;
