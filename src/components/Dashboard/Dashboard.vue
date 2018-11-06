@@ -112,7 +112,7 @@
                 </v-btn>
               </div>
               <div class="text-xs-right" style="width: 40px;">
-              <v-btn flat color="blue">Apply Now</v-btn>
+                <v-btn flat color="blue" @click="openApplyDialog(jobChild.jobId, index)">Apply Now</v-btn>
               </div>
             </v-layout>
           </v-card-actions>
@@ -232,20 +232,61 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="applyDialog.switch" persistent max-width="600px" v-if="jobs != null">
+      <v-card>
+        <v-card-title class="text-xs-center">
+          <h2 class="headline text-capitalize">Apply For {{jobs[applyDialog.index].name}} Job</h2>
+        </v-card-title>
+        <v-card-text>
+          <v-container grid-list-md>
+            <v-form @submit.prevent="" ref="applyForm">
+              <v-layout row wrap>
+                <v-flex xs12>
+                  <h3 class="subheading font-weight-subheading">Answer this question to continue.</h3>
+                  <v-textarea
+                    rows="1"
+                    auto-grow
+                    label="Why do you want this Job?"
+                    counter="100"
+                    hint="Please do not exceed 100 Characters."
+                    :rules="[rules.required, rules.question]"
+                    value=""
+                    v-model="whyQuestion"
+                    persistent-hint
+                  ></v-textarea>
+                </v-flex>
+              </v-layout>
+            </v-form>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" flat @click.native="closeApplyForm" :disabled="loading">Cancel</v-btn>
+          <v-btn color="blue darken-1" flat @click.native="applyForJob" :loading = "loading" :disabled="loading">Apply</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script>
-import { auth } from "@/scripts/firebase";
+import { firestore, auth } from "@/scripts/firebase";
 export default {
   data: vm => ({
     show: false,
     noConstraints: true,
     dialog: false,
+    applyDialog: {
+      switch: false,
+      job: null,
+      index: 0
+    },
     dateMenu: false,
     loading: false,
     response: "",
     snackbar: false,
+    userProfile: null,
     alert: false,
     constraints: {
       noChange: true,
@@ -253,6 +294,7 @@ export default {
       duration: null,
       panel: [true, true]
     },
+    whyQuestion: "",
     items: ["Design", "Web Development", "Content Writing"],
     job: {
       name: null,
@@ -268,45 +310,30 @@ export default {
     dateFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
     rules: {
       required: value => !!value || "Required.",
-      min: v => v <= 10 || "Max 10 Vacancies"
+      min: v => v <= 10 || "Max 10 Vacancies",
+      question: v => v.length <= 100 || "Max 100 Characters."
     },
     jobs: null
-    // availableJobs: [
-    //   {
-    //     id: 1,
-    //     company: "Infosys Tech Solutions",
-    //     requiredPosition: "Software Tester",
-    //     positionsAvailable: 1,
-    //     lastDate: "26th Nov",
-    //     show: false,
-    //     tag: "Design",
-    //     estimatedDuration: "2 Months",
-    //     details:
-    //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-    //   },
-    //   {
-    //     id: 1,
-    //     company: "Infosys Tech Solutions",
-    //     requiredPosition: "Web Designer",
-    //     positionsAvailable: 1,
-    //     lastDate: "26th Nov",
-    //     show: false,
-    //     tag: "Web Development",
-    //     estimatedDuration: "6 Months",
-    //     details:
-    //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-    //   }
-    // ]
   }),
   async created() {
     var self = this;
+    var userP;
     auth.onAuthStateChanged(function(user) {
       if (!user) {
         self.$router.push("/login");
       }
+      if (user) {
+        firestore
+          .collection("users")
+          .doc(user.uid)
+          .get()
+          .then(function(doc) {
+            self.userProfile = doc.data();
+          });
+      }
     });
-    await this.$store.dispatch("getJobs");
-    this.jobs = this.availableJobs;
+    await self.$store.dispatch("getJobs");
+    self.jobs = self.availableJobs;
   },
   computed: {
     availableJobs() {
@@ -323,7 +350,31 @@ export default {
   },
 
   methods: {
-    async dialogClosed() {
+    async applyForJob() {
+      var payload = {
+        jobId: this.applyDialog.job,
+        answer: this.whyQuestion,
+        user: auth.currentUser.uid
+      };
+      this.loading = true;
+      this.response = await this.$store.dispatch("applyForJob", payload);
+      this.loading = false;
+      this.snackbar = true;
+      if (!this.response.error) this.closeApplyForm();
+    },
+    closeApplyForm() {
+      this.applyDialog.switch = false;
+      this.applyDialog.index = 0;
+      this.applyDialog.job = null;
+      this.$refs.applyForm.reset();
+      // console.clear();
+    },
+    openApplyDialog(param, index) {
+      this.applyDialog.switch = true;
+      this.applyDialog.job = param;
+      this.applyDialog.index = index;
+    },
+    dialogClosed() {
       this.dialog = false;
     },
     formatDate(date) {
@@ -356,6 +407,7 @@ export default {
           }
         });
       }
+      this.userAppliedJobs();
     },
     async addJob() {
       var validated = this.$refs.addJobForm.validate();
@@ -371,6 +423,10 @@ export default {
     },
     clearJobForm() {
       this.$refs.addJobForm.reset();
+      this.date = new Date().toISOString().substr(0, 10);
+      this.dateFormatted = this.formatDate(
+        new Date().toISOString().substr(0, 10)
+      );
     },
     clearConstraints() {
       this.constraints.type = null;

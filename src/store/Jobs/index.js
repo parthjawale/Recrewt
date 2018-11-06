@@ -42,14 +42,13 @@ export default {
           });
           commit("setJobs", jobs);
         });
-
-      // commit () after firebase async code.
     },
     addJob: async ({}, payload) => {
       payload.status = "Posted";
       let message;
       let error = false;
       var jobsRef = firestore.collection("jobs").doc();
+      payload.jobId = jobsRef.id;
       await firestore
         .collection("jobs")
         .doc(jobsRef.id)
@@ -86,6 +85,96 @@ export default {
         error: error,
         message: message
       };
+      return response;
+    },
+    applyForJob: async ({}, payload) => {
+      var response = {
+        message: "You've applied for this job successfully.",
+        error: false
+      };
+      await firestore
+        .collection("jobs")
+        .doc(payload.jobId)
+        .get()
+        .then(
+          function(doc) {
+            var appliedUsers = [];
+            if (
+              doc.data().appliedUsers == undefined ||
+              doc.data().appliedUsers == null
+            ) {
+              appliedUsers = [];
+            } else {
+              appliedUsers = doc.data().appliedUsers;
+            }
+            var child = {
+              user: payload.user,
+              answer: payload.answer
+            };
+            appliedUsers.push(child);
+            firestore
+              .collection("jobs")
+              .doc(payload.jobId)
+              .update({
+                appliedUsers: appliedUsers
+              })
+              .then(
+                function() {
+                  firestore
+                    .collection("users")
+                    .doc(payload.user)
+                    .get()
+                    .then(
+                      function() {
+                        var appliedJobs = [];
+                        if (
+                          doc.data().appliedJobs != undefined &&
+                          doc.data().appliedJobs != null
+                        ) {
+                          appliedJobs = doc.data().appliedJobs;
+                        }
+                        var childT = {
+                          jobId: payload.jobId,
+                          answer: payload.answer
+                        };
+                        console.log(appliedJobs);
+                        console.log(childT);
+                        appliedJobs.push(childT);
+                        firestore
+                          .collection("users")
+                          .doc(payload.user)
+                          .update({
+                            appliedJobs: appliedJobs
+                          })
+                          .then(
+                            function() {
+                              response.message =
+                                "You've applied for this job successfully.";
+                              response.error = false;
+                            },
+                            function(e) {
+                              response.message = e.message;
+                              response.error = true;
+                            }
+                          );
+                      },
+                      function(e) {
+                        response.message = e.message;
+                        response.error = true;
+                      }
+                    );
+                },
+                function(e) {
+                  response.message = e.message;
+                  response.error = true;
+                }
+              );
+          },
+          function(e) {
+            response.message = e.message;
+            response.error = true;
+          }
+        );
       return response;
     }
   }
