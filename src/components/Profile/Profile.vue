@@ -286,7 +286,7 @@ export default {
                     }
                   }
                   for (var i in self.userProfile.approvedJobs) {
-                    if (self.userProfile.approvedJobs[i] == child.id)
+                    if (self.userProfile.approvedJobs[i].jobId == child.id)
                       self.approvedJobs.push(child.data());
                   }
                 });

@@ -27,6 +27,7 @@
               <v-radio-group v-model="constraints.type">
                 <v-radio style="padding-left: 24px;" color="red" label="Design" value="Design"></v-radio>
                 <v-radio style="padding-left: 24px;" color="red" label="Web Development" value="Web Development"></v-radio>
+                <v-radio style="padding-left: 24px;" color="red" label="Content Writing" value="Content Writing"></v-radio>
               </v-radio-group>
             </v-expansion-panel-content>
             <v-expansion-panel-content ripple>
@@ -118,7 +119,11 @@
           </v-card-actions>
           <v-slide-y-transition>
             <v-card-text v-show="jobChild.show">
+              <p class="px-2">
+                Purpose: {{jobChild.purpose}}
+                <br>
               {{jobChild.description}}
+              </p>
             </v-card-text>
           </v-slide-y-transition>
         </v-card>
