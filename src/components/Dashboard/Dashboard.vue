@@ -372,8 +372,6 @@ export default {
               flag = 0;
             }
             flag = 0;
-            console.log(avJobs);
-            console.log(self.userProfile.approvedJobs);
             for (var i in avJobs) {
               for (var j in self.userProfile.approvedJobs) {
                 if (self.userProfile.approvedJobs[j].jobId == avJobs[i].jobId) {
