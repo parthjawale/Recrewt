@@ -190,7 +190,6 @@ export default {
       this.loading = true;
       try {
         this.response = await this.$store.dispatch("signUpUser", payload);
-        console.log(this.response);
       } catch (ex) {
         alert(ex);
       }
