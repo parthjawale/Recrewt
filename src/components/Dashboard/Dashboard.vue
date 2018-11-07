@@ -33,12 +33,8 @@
               <v-expansion-panel-content ripple>
                 <div slot="header" class="subheading">Duration</div>
                 <v-radio-group v-model="constraints.duration">
-                  <v-radio style="padding-left: 24px;" color="red" label="1 Month" value="1"></v-radio>
-                  <v-radio style="padding-left: 24px;" color="red" label="2 Months" value="2"></v-radio>
-                  <v-radio style="padding-left: 24px;" color="red" label="3 Months" value="3"></v-radio>
-                  <v-radio style="padding-left: 24px;" color="red" label="4 Months" value="4"></v-radio>
-                  <v-radio style="padding-left: 24px;" color="red" label="5 Months" value="5"></v-radio>
-                  <v-radio style="padding-left: 24px;" color="red" label="6 Months" value="6"></v-radio>
+                  <v-radio style="padding-left: 24px;" color="red" v-for="(duration, index) in durations" v-if="duration == 1" :key="index" :label="`${duration} Month`" :value="duration"></v-radio>
+                  <v-radio style="padding-left: 24px;" color="red" v-for="(duration, index) in durations" v-if="duration > 1" :key="index" :label="`${duration} Months`" :value="duration"></v-radio>
                 </v-radio-group>
               </v-expansion-panel-content>
             </v-expansion-panel>
@@ -46,6 +42,7 @@
               <v-btn class="text-xs-center mx-auto d-block" color="blue" @click="findJobs" flat>Apply Constraints</v-btn>
               <v-btn class="text-xs-center mx-auto d-block" color="red" @click="clearConstraints" flat>Clear Constraints</v-btn>
             </div>
+            <small>* Jobs posted by you will not be visible. <br>Please go to <router-link tag="a" to="/profile" class="blue--text text--darken-2" style="text-decoration:none;">Profile</router-link> to view those jobs.</small>
           </div>
         </v-flex>
         <v-flex xs9 class="pl-3">
@@ -114,7 +111,7 @@
                     </v-btn>
                   </div>
                   <div class="text-xs-right" style="width: 40px;">
-                    <v-btn flat color="blue" @click="openApplyDialog(jobChild.jobId, index)">Apply Now</v-btn>
+                    <v-btn flat color="blue" :disabled="jobChild.alreadyApproved" @click="openApplyDialog(jobChild.jobId, index)">{{ jobChild.alreadyApproved ? 'Already Approved' : 'Apply Now' }}</v-btn>
                   </div>
                 </v-layout>
               </v-card-actions>
@@ -300,7 +297,7 @@ export default {
     response: "",
     snackbar: false,
     preloaderLoading: true,
-    userProfile: null,
+    userProfile: {},
     alert: false,
     constraints: {
       noChange: true,
@@ -308,6 +305,8 @@ export default {
       duration: null,
       panel: [false, false]
     },
+    skills: [],
+    durations: [],
     whyQuestion: "",
     items: ["Design", "Web Development", "Content Writing"],
     job: {
@@ -328,7 +327,19 @@ export default {
       positions: v => v > 0 || "No of vacancies must atleast be 1.",
       question: v => v.length <= 100 || "Max 100 Characters."
     },
-    jobs: null
+    jobs: [
+      {
+        name: "",
+        purpose: "",
+        show: false,
+        specialisation: "",
+        otherSkills: "",
+        positionsAvailable: 0,
+        estimatedDuration: 0,
+        description: ""
+      }
+    ],
+    availableJobs: []
   }),
   async created() {
     var self = this;
@@ -336,15 +347,56 @@ export default {
     var userP;
     auth.onAuthStateChanged(function(user) {
       if (!user) {
+        self.preloaderLoading = false;
         self.$router.push("/login");
       }
       if (user) {
+        self.preloaderLoading = true;
         firestore
           .collection("users")
           .doc(user.uid)
           .get()
           .then(function(doc) {
             self.userProfile = doc.data();
+            var flag = 0;
+            self.availableJobs = self.$store.getters.getJobs;
+            var jobs = self.availableJobs;
+            var avJobs = [];
+            for (var i in jobs) {
+              for (var j in self.userProfile.postedJobs) {
+                if (self.userProfile.postedJobs[j] == jobs[i].jobId) {
+                  flag = 1;
+                }
+              }
+              if (flag == 0) avJobs.push(jobs[i]);
+              flag = 0;
+            }
+            flag = 0;
+            console.log(avJobs);
+            console.log(self.userProfile.approvedJobs);
+            for (var i in avJobs) {
+              for (var j in self.userProfile.approvedJobs) {
+                if (self.userProfile.approvedJobs[j].jobId == avJobs[i].jobId) {
+                  flag = 1;
+                  avJobs[i].alreadyApproved = true;
+                }
+              }
+              if (flag == 0) avJobs[i].alreadyApproved = false;
+              flag = 0;
+            }
+            self.availableJobs = avJobs;
+            var skillsSet = new Set();
+            var durationsSet = new Set();
+            for (var i in avJobs) {
+              skillsSet.add(avJobs[i].specialisation);
+            }
+            for (var i in avJobs) {
+              durationsSet.add(avJobs[i].estimatedDuration);
+            }
+            self.skills = [...skillsSet];
+            self.durations = [...durationsSet];
+            self.durations.sort();
+            self.jobs = self.availableJobs;
             self.preloaderLoading = false;
           });
       }
@@ -358,17 +410,7 @@ export default {
     allSkills() {
       return this.$store.getters.getSkills;
     },
-    availableJobs() {
-      this.preloaderLoading = true;
-      var jobs = this.$store.getters.getJobs;
-      var skillsSet = new Set();
-      for (var i in jobs) {
-        skillsSet.add(jobs[i].specialisation);
-      }
-      this.skills = [...skillsSet];
-      this.preloaderLoading = false;
-      return jobs;
-    },
+
     computedDateFormatted() {
       return this.formatDate(this.date);
     }
@@ -448,7 +490,10 @@ export default {
       this.loading = false;
       this.snackbar = true;
       this.alert = true;
-      if (!this.response.error) this.clearJobForm();
+      if (!this.response.error) {
+        this.clearJobForm();
+        this.dialog = false;
+      }
     },
     clearJobForm() {
       this.$refs.addJobForm.reset();
