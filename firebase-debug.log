@@ -1,0 +1,56 @@
+[debug] [2018-11-07T07:14:50.671Z] ----------------------------------------------------------------------
+[debug] [2018-11-07T07:14:50.673Z] Command:       /usr/local/bin/node /usr/local/bin/firebase deploy
+[debug] [2018-11-07T07:14:50.673Z] CLI Version:   4.2.1
+[debug] [2018-11-07T07:14:50.673Z] Platform:      darwin
+[debug] [2018-11-07T07:14:50.673Z] Node Version:  v9.11.1
+[debug] [2018-11-07T07:14:50.674Z] Time:          Wed Nov 07 2018 12:44:50 GMT+0530 (IST)
+[debug] [2018-11-07T07:14:50.674Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-11-07T07:14:50.684Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-11-07T07:14:50.684Z] > authorizing via signed-in user
+[debug] [2018-11-07T07:14:50.686Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2018-11-07T07:14:50.686Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+
+[debug] [2018-11-07T07:14:50.986Z] <<< HTTP RESPONSE 200
+[debug] [2018-11-07T07:14:51.001Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/recrewt-8876b  
+ 
+[debug] [2018-11-07T07:14:52.473Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Deploying to 'recrewt-8876b'...
+[info] 
+[info] i  deploying storage, firestore, hosting
+[debug] [2018-11-07T07:14:52.479Z] >>> HTTP REQUEST GET https://appengine.googleapis.com/v1/apps/recrewt-8876b  
+ 
+[debug] [2018-11-07T07:14:54.568Z] <<< HTTP RESPONSE 200
+[info] i  storage: checking storage.rules for compilation errors...
+[debug] [2018-11-07T07:14:54.572Z] >>> HTTP REQUEST POST https://firebaserules.googleapis.com/v1/projects/recrewt-8876b:test  
+
+[debug] [2018-11-07T07:14:56.199Z] <<< HTTP RESPONSE 200
+[info] ✔  storage: rules file storage.rules compiled successfully
+[info] i  firestore: checking firestore.rules for compilation errors...
+[debug] [2018-11-07T07:14:56.204Z] >>> HTTP REQUEST POST https://firebaserules.googleapis.com/v1/projects/recrewt-8876b:test  
+
+[debug] [2018-11-07T07:14:57.696Z] <<< HTTP RESPONSE 200
+[info] ✔  firestore: rules file firestore.rules compiled successfully
+[debug] [2018-11-07T07:14:57.698Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/recrewt-8876b/versions  
+
+[debug] [2018-11-07T07:15:00.154Z] <<< HTTP RESPONSE 200
+[info] i  storage: uploading rules storage.rules...
+[debug] [2018-11-07T07:15:00.155Z] >>> HTTP REQUEST POST https://firebaserules.googleapis.com/v1/projects/recrewt-8876b/rulesets  
+
+[debug] [2018-11-07T07:15:01.792Z] <<< HTTP RESPONSE 200
+[debug] [2018-11-07T07:15:01.792Z] [rules] created ruleset projects/recrewt-8876b/rulesets/c9d74d0a-57f7-4750-9350-21801b52a7b5
+[info] i  firestore: uploading rules firestore.rules...
+[debug] [2018-11-07T07:15:01.793Z] >>> HTTP REQUEST POST https://firebaserules.googleapis.com/v1/projects/recrewt-8876b/rulesets  
+
+[debug] [2018-11-07T07:15:01.794Z] >>> HTTP REQUEST GET https://firestore.googleapis.com/v1beta1/projects/recrewt-8876b/databases/(default)/indexes  
+ 
+[debug] [2018-11-07T07:15:03.125Z] <<< HTTP RESPONSE 200
+[debug] [2018-11-07T07:15:03.277Z] <<< HTTP RESPONSE 200
+[debug] [2018-11-07T07:15:03.277Z] [rules] created ruleset projects/recrewt-8876b/rulesets/dc7548ef-e33c-4afd-83a8-d43d146eabda
+[info] i  hosting[recrewt-8876b]: beginning deploy...
+[info] i  hosting[recrewt-8876b]: found 11 files in dist
+[debug] [2018-11-07T07:15:03.987Z] [hosting] hash cache [ZGlzdA] stored for 11 files
+[debug] [2018-11-07T07:15:03.987Z] [hosting][hash queue][FINAL]
+[debug] [2018-11-07T07:15:03.987Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/recrewt-8876b/versions/a6b53032e15aa08d:populateFiles  
+ <request body omitted>
