@@ -1,4 +1,6 @@
 import { firestore, auth } from "@/scripts/firebase";
+import firebase from "firebase/app";
+import "firebase/auth";
 
 export default {
   state: {
@@ -17,6 +19,55 @@ export default {
   actions: {
     getUser: ({ commit }) => {
       commit("setUser", auth.currentUser);
+    },
+    resetPassword: async ({}, payload) => {
+      var response = {
+        message:
+          "Password reset link has been mailed to the email associated with this account.",
+        error: false
+      };
+      await auth
+        .sendPasswordResetEmail(payload.email)
+        .then(function() {
+          response.message =
+            "Password reset link has been mailed to the email associated with this account.";
+          response.email = false;
+        })
+        .catch(function(error) {
+          response.error = true;
+          response.message = error.message;
+        });
+      return response;
+    },
+    changePassword: async ({}, payload) => {
+      const user = auth.currentUser;
+      var response = {
+        message: "Password Successfully Changed",
+        error: false
+      };
+      const credential = firebase.auth.EmailAuthProvider.credential(
+        user.email,
+        payload.oldPassword
+      );
+      await user
+        .reauthenticateAndRetrieveDataWithCredential(credential)
+        .then(function() {
+          user
+            .updatePassword(payload.newPassword)
+            .then(function() {
+              response.error = false;
+              response.message = "Password Successfully Changed.";
+            })
+            .catch(function(error) {
+              response.error = true;
+              response.message = error.message;
+            });
+        })
+        .catch(function(error) {
+          response.error = true;
+          response.message = error.message;
+        });
+      return response;
     },
     loginUser: async ({ commit }, payload) => {
       let message;

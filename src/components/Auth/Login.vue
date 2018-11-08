@@ -15,8 +15,8 @@
       </v-btn>
     </v-snackbar>
     <v-card width="500" style="padding:20px;margin: 30px auto;">
-      <h2 class="display-2 font-weight-light text-xs-left mb-3">Login</h2>
-      <v-form ref="loginForm" width="400" @submit.prevent="login">
+      <h2 class="display-2 font-weight-light text-xs-left mb-3">{{ passwordReset ? 'Reset Password' : 'Login' }}</h2>
+      <v-form ref="loginForm" width="400" @submit.prevent="passwordReset ? login : resetPassword">
         <v-text-field
           v-model="email"
           :rules="rules.emailRules"
@@ -32,12 +32,16 @@
           name="input-password"
           label="Password"
           hint="At least 6 characters"
+          v-if="!passwordReset"
           required
           @click:append="showPassword = !showPassword"
           @keyup.enter="login"
         ></v-text-field>
-        <v-btn :loading="loading" :disabled="loading" type="submit">Submit</v-btn>
-        <v-btn @click="clear" color="red" flat>Clear</v-btn>
+        <p class="body-2 blue--text text--darken-2 font-weight-regular hover-underline" v-if="!passwordReset" @click="passwordReset = true">Forgot Password?</p>
+        <p class="body-2 blue--text text--darken-2 font-weight-regular hover-underline" v-if="passwordReset" @click="passwordReset = false">Go Back.</p>
+        <v-btn :loading="loading" :disabled="loading" type="submit" v-if="!passwordReset">Submit</v-btn>
+        <v-btn :loading="loading" :disabled="loading" type="submit" @click="resetPassword" v-if="passwordReset">Reset Password</v-btn>
+        <v-btn @click="clear" color="red" flat >Clear</v-btn>
       </v-form>
     </v-card>
   </v-container>
@@ -55,6 +59,7 @@ export default {
       response: "",
       email: "",
       snackbar: false,
+      passwordReset: false,
       rules: {
         required: value => !!value || "Required.",
         min: v => v.length >= 6 || "Min 6 characters",
@@ -74,6 +79,16 @@ export default {
     });
   },
   methods: {
+    async resetPassword() {
+      let validate = this.$refs.loginForm.validate();
+      if (!validate) return;
+      this.loading = true;
+      var payload = { email: this.email };
+      this.response = await this.$store.dispatch("resetPassword", payload);
+      this.loading = false;
+      this.snackbar = true;
+      if (!this.response.error) this.passwordReset = false;
+    },
     async login() {
       let validate = this.$refs.loginForm.validate();
       if (!validate) return;
@@ -101,3 +116,11 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.hover-underline:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+</style>
+

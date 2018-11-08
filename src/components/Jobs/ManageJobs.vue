@@ -87,7 +87,7 @@
                     :size="55"
                     :width="7"
                     color="blue"
-                    v-if="job.appliedUsers.length > 0"
+                    v-if="users.length > 0"
                     indeterminate
                     class="pb-4"
                   ></v-progress-circular>
@@ -149,6 +149,7 @@
                   </v-card-text>
                   <v-card-actions>
                     <v-spacer></v-spacer>
+                    <v-btn color="red" flat @click="deleteUserDialog(user)">Delete Candidate</v-btn>
                     <v-btn color="blue" flat @click="approveUserDialog(user)">Approve Candidate</v-btn>
                   </v-card-actions>
                 </v-card>
@@ -244,8 +245,26 @@
           <v-divider></v-divider>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn flat color="red" @click="closeApproveDialog()">No, Please take me back.</v-btn>
-            <v-btn color="green" flat @click="approveUser()">Yes, I do.</v-btn>
+            <v-btn flat color="red" :disabled="loading" @click="closeApproveDialog()">No, Please take me back.</v-btn>
+            <v-btn color="green" :disabled="loading" :loading="loading" flat @click="approveUser()">Yes, I do.</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog width="500" persistent v-model="deleteDialog.switch" v-if="deleteDialog.user != null">
+        <v-card>
+          <v-card-title class="grey lighten-2">
+            <h2 class="headline font-weight-regular">Delete {{ deleteDialog.user.name.split(' ')[0] }}</h2>
+          </v-card-title>
+          <v-card-text>
+            <p class="subheading mb-0">Do you agree that you want to delete {{ deleteDialog.user.name.split(' ')[0] }} from the aforementioned job. There's no turning back from this.</p>
+            <br>
+            <small>* Please contact the candidate before approving him/her.</small>
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn flat color="black" :disabled="loading" @click="closeDeleteDialog()">Go Back</v-btn>
+            <v-btn color="red" flat :disabled="loading" :loading="loading" @click="deleteCandidate()">Delete {{ deleteDialog.user.name.split(' ')[0] }}</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -270,7 +289,11 @@ export default {
       response: "",
       alert: false,
       approveDialog: {
-        switch: true,
+        switch: false,
+        user: null
+      },
+      deleteDialog: {
+        switch: false,
         user: null
       },
       preloaderLoading: true,
@@ -292,6 +315,11 @@ export default {
           .doc(self.jobId)
           .get()
           .then(function(doc) {
+            if (!doc.exists) {
+              self.authorised = false;
+              self.preloaderLoading = false;
+              return;
+            }
             var data = doc.data();
             if (data.user != user.uid) {
               self.authorised = false;
@@ -324,7 +352,10 @@ export default {
                       data.appliedUsers.length != 0
                     ) {
                       for (var i in data.appliedUsers) {
-                        if (child.data().uid == data.appliedUsers[i].user) {
+                        if (
+                          child.data().uid == data.appliedUsers[i].user &&
+                          data.appliedUsers[i].status != "rejected"
+                        ) {
                           self.users.push(child.data());
                         }
                       }
@@ -360,6 +391,26 @@ export default {
     approveUserDialog(user) {
       this.approveDialog.switch = true;
       this.approveDialog.user = user;
+    },
+    deleteUserDialog(user) {
+      this.deleteDialog.switch = true;
+      this.deleteDialog.user = user;
+    },
+    closeDeleteDialog() {
+      this.deleteDialog.switch = false;
+      this.deleteDialog.user = null;
+    },
+    async deleteCandidate() {
+      var payload = {
+        job: this.job,
+        user: this.deleteDialog.user
+      };
+      this.loading = true;
+      this.response = await this.$store.dispatch("deleteCandidate", payload);
+      this.loading = false;
+      this.snackbar = true;
+      if (!this.response.error) this.alert = true;
+      this.closeDeleteDialog();
     },
     goTo(param) {
       this.$router.push(param);
