@@ -111,7 +111,7 @@
           <v-flex class="px-2" xs12>
             <v-autocomplete
             v-model="specialisation"
-            :items="items"
+            :items="skills"
             :rules="[rules.required]"
             label="Select your area of expertise."
           ></v-autocomplete>
@@ -161,17 +161,13 @@ export default {
           v <= 100.0 || "Percentage must be less than or equal to 100%",
         ageMin: v => v >= 18 || "You must be atleast greater than 18 to work.",
         ageMax: v => v <= 100 || "You are too old."
-      },
-      items: ["Design", "Web Development", "Content Writing"]
+      }
     };
   },
-  created() {
-    // var self = this;
-    // auth.onAuthStateChanged(function(user) {
-    //   if (user) {
-    //     self.$router.push("/dashboard");
-    //   }
-    // });
+  computed: {
+    skills() {
+      return this.$store.getters.getSkills;
+    }
   },
   methods: {
     async signUp() {

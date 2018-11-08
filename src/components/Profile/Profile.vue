@@ -15,6 +15,19 @@
           Close
         </v-btn>
       </v-snackbar>
+      <v-snackbar
+        v-model="passwordSnackbar"
+        top
+      >
+        {{ passwordResponse.message }}
+        <v-btn
+          color="pink"
+          flat
+          @click="passwordSnackbar = false"
+        >
+          Close
+        </v-btn>
+      </v-snackbar>
       <h1 class="display-3">Hello, <span class="blue--text">{{userProfile.name.split(' ')[0]}}.</span></h1>
       <h2 class="headline"> Welcome to your Profile.</h2>
       <v-layout row wrap>
@@ -75,6 +88,9 @@
                 </v-btn>
             </v-flex>
           </v-layout>
+          <v-flex xs12>
+            <small>* Jobs where you were rejected are not shown in Applied Jobs.</small>
+          </v-flex>
         </v-flex>
       </v-layout>
       <v-layout column class="pt-5" v-show="det.show">
@@ -221,6 +237,9 @@
                     label="Select your area of expertise."
                   ></v-autocomplete>
                   </v-flex>
+                  <v-flex xs12 sm6>
+                    <v-btn @click="passwordDialog = true">Change Password</v-btn>
+                  </v-flex>
                 </v-layout>
               </v-form>
             </v-container>
@@ -232,7 +251,56 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-
+      <v-dialog v-model="passwordDialog" dark persistent max-width="300px">
+        <v-card>
+          <v-form ref="changePasswordForm" @submit.prevent="saveNewPassword">
+            <v-card-title>
+              <h2 class="headline">Change Password</h2>
+            </v-card-title>
+            <v-card-text>
+                <v-layout row wrap>
+                  <v-flex xs12>
+                    <v-text-field
+                      label="Old Password"
+                      hint="Enter Current Password"
+                      :rules="[rules.required, rules.min]"
+                      v-model="changePassword.old"
+                    ></v-text-field>
+                  </v-flex>
+                  <v-flex xs12>
+                    <v-text-field
+                      label="New Password"
+                      autocomplete="off"
+                      :append-icon="showPassword ? 'visibility_off' : 'visibility'"
+                      :type="showPassword ? 'text' : 'password'"
+                      hint="Enter New Password"
+                      :rules="[rules.required, rules.min]"
+                      v-model="changePassword.new"
+                      @click:append="showPassword = !showPassword"
+                    ></v-text-field>
+                  </v-flex>
+                  <v-flex xs12>
+                    <v-text-field
+                      label="New Password Again"
+                      autocomplete="off"
+                      :append-icon="showPassword ? 'visibility_off' : 'visibility'"
+                      :type="showPassword ? 'text' : 'password'"
+                      hint="Enter New Password Again"
+                      :rules="[rules.required, rules.min, rules.repassword]"
+                      v-model="changePassword.reNew"
+                      @click:append="showPassword = !showPassword"
+                    ></v-text-field>
+                  </v-flex>
+                </v-layout>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+                <v-btn :disabled="passwordLoading" @click="closePasswordDialog">Close</v-btn>
+                <v-btn type="submit" :loading="passwordLoading" :disabled="passwordLoading" @click="saveNewPassword">Save</v-btn>
+            </v-card-actions>
+          </v-form>
+        </v-card>
+      </v-dialog>
       <v-dialog width="500" persistent v-model="deleteJobDialog.switch" v-if="deleteJobDialog.job != null">
         <v-card>
           <v-card-title class="grey lighten-2">
@@ -256,6 +324,8 @@
 
 <script>
 import { firestore, auth } from "@/scripts/firebase";
+import firebase from "firebase/app";
+import "firebase/auth";
 import Preloader from "@/components/Common/Preloader";
 export default {
   components: {
@@ -272,15 +342,30 @@ export default {
       response: "",
       loading: false,
       snackbar: false,
+      showPassword: false,
       deleteAlert: false,
+      passwordDialog: false,
+      passwordResponse: {
+        message: "Password Successfully Changed.",
+        error: false
+      },
+      passwordSnackbar: false,
+      passwordLoading: false,
       deleteJobDialog: {
         switch: false,
         job: null
+      },
+      changePassword: {
+        old: "",
+        new: "",
+        reNew: ""
       },
       deleteLoading: false,
       rules: {
         required: value => !!value || "Required.",
         min: v => v.length >= 6 || "Min 6 characters",
+        repassword: value =>
+          value == this.changePassword.new || "Both Passwords must be same.",
         name: value =>
           value.trim().split(" ").length > 1 || "Enter Last Name too",
         emailRules: [
@@ -321,7 +406,10 @@ export default {
                         self.postedJobs.push(child.data());
                     }
                     for (var i in self.userProfile.appliedJobs) {
-                      if (self.userProfile.appliedJobs[i].jobId == child.id) {
+                      if (
+                        self.userProfile.appliedJobs[i].jobId == child.id &&
+                        self.userProfile.appliedJobs[i].status != "rejected"
+                      ) {
                         self.appliedJobs.push(child.data());
                       }
                     }
@@ -338,6 +426,26 @@ export default {
     });
   },
   methods: {
+    async saveNewPassword() {
+      var validate = this.$refs.changePasswordForm.validate();
+      if (!validate) return;
+      this.passwordLoading = true;
+      var payload = {
+        oldPassword: this.changePassword.old,
+        newPassword: this.changePassword.new
+      };
+      this.passwordResponse = await this.$store.dispatch(
+        "changePassword",
+        payload
+      );
+      this.passwordSnackbar = true;
+      this.passwordLoading = false;
+      if (!this.passwordResponse.error) this.closePasswordDialog();
+    },
+    closePasswordDialog() {
+      this.$refs.changePasswordForm.reset();
+      this.passwordDialog = false;
+    },
     openDeleteDialog(job) {
       this.deleteJobDialog.switch = true;
       this.deleteJobDialog.job = job;

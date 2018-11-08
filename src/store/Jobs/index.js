@@ -2,19 +2,7 @@ import { firestore, auth } from "@/scripts/firebase";
 
 export default {
   state: {
-    jobs: [
-      // {
-      //   name: "Infosys Tech Solutions",
-      //   requiredPosition: "Software Tester",
-      //   positionsAvailable: 1,
-      //   lastDate: "26th Nov",
-      //   show: false,
-      //   tag: "Design",
-      //   estimatedDuration: "2 Months",
-      //   details:
-      //     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-      // },
-    ],
+    jobs: [],
     skills: [
       "Data Science & AI",
       "Web Development",
@@ -314,6 +302,59 @@ export default {
             response.message = "The job is currently not available.";
             response.error = true;
           }
+        });
+      return response;
+    },
+    deleteCandidate: async ({}, payload) => {
+      var response = {
+        message: "Candidate Deleted",
+        error: false
+      };
+      await firestore
+        .collection("jobs")
+        .doc(payload.job.jobId)
+        .get()
+        .then(function(doc) {
+          var data = doc.data();
+          for (var j in data.appliedUsers) {
+            if (data.appliedUsers[j].user == payload.user.uid) {
+              data.appliedUsers[j].status = "rejected";
+            }
+          }
+          firestore
+            .collection("jobs")
+            .doc(payload.job.jobId)
+            .update({
+              appliedUsers: data.appliedUsers
+            })
+            .then(function() {
+              firestore
+                .collection("users")
+                .doc(payload.user.uid)
+                .get()
+                .then(function(userDoc) {
+                  var uDoc = userDoc.data();
+                  for (var j in uDoc.appliedJobs) {
+                    if (uDoc.appliedJobs[j].jobId == payload.job.jobId) {
+                      uDoc.appliedJobs[j].status = "rejected";
+                    }
+                  }
+                  firestore
+                    .collection("users")
+                    .doc(payload.user.uid)
+                    .update({
+                      appliedJobs: uDoc.appliedJobs
+                    })
+                    .then(function() {
+                      response.message = "Candidate Deleted";
+                      response.error = false;
+                    });
+                });
+            });
+        })
+        .catch(function(error) {
+          response.message = error.message;
+          response.error = true;
         });
       return response;
     },

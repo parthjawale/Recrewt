@@ -111,7 +111,9 @@
                     </v-btn>
                   </div>
                   <div class="text-xs-right" style="width: 40px;">
-                    <v-btn flat color="blue" :disabled="jobChild.alreadyApproved" @click="openApplyDialog(jobChild.jobId, index)">{{ jobChild.alreadyApproved ? 'Already Approved' : 'Apply Now' }}</v-btn>
+                    <v-btn flat color="blue" disabled v-if="jobChild.alreadyApproved">Already Approved</v-btn>
+                    <v-btn flat color="blue" disabled v-if="jobChild.alreadyApplied">Already Applied</v-btn>
+                    <v-btn flat color="blue" v-if="!jobChild.alreadyApproved && !jobChild.alreadyApplied" @click="openApplyDialog(jobChild.jobId, index)">Apply Now</v-btn>
                   </div>
                 </v-layout>
               </v-card-actions>
@@ -347,7 +349,6 @@ export default {
     var userP;
     auth.onAuthStateChanged(function(user) {
       if (!user) {
-        self.preloaderLoading = false;
         self.$router.push("/login");
       }
       if (user) {
@@ -380,6 +381,16 @@ export default {
                 }
               }
               if (flag == 0) avJobs[i].alreadyApproved = false;
+              flag = 0;
+            }
+            for (var i in avJobs) {
+              for (var j in self.userProfile.appliedJobs) {
+                if (self.userProfile.appliedJobs[j].jobId == avJobs[i].jobId) {
+                  flag = 1;
+                  avJobs[i].alreadyApplied = true;
+                }
+              }
+              if (flag == 0) avJobs[i].alreadyApplied = false;
               flag = 0;
             }
             self.availableJobs = avJobs;
