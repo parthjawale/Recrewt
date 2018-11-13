@@ -26,7 +26,7 @@
         <v-text-field
           v-model="password"
           autocomplete="off"
-          :append-icon="showPassword ? 'visibility_off' : 'visibility'"
+          :append-icon="!showPassword ? 'visibility_off' : 'visibility'"
           :rules="[rules.required, rules.min]"
           :type="showPassword ? 'text' : 'password'"
           name="input-password"

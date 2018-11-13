@@ -149,6 +149,13 @@ export default {
                     .then(
                       function() {
                         commit("setUser", user.user);
+                        fetch("/msg/message.php", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json"
+                          },
+                          body: JSON.stringify(payload)
+                        });
                       },
                       function(error) {
                         noError = false;

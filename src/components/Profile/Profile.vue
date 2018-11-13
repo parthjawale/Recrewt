@@ -271,7 +271,7 @@
                     <v-text-field
                       label="New Password"
                       autocomplete="off"
-                      :append-icon="showPassword ? 'visibility_off' : 'visibility'"
+                      :append-icon="!showPassword ? 'visibility_off' : 'visibility'"
                       :type="showPassword ? 'text' : 'password'"
                       hint="Enter New Password"
                       :rules="[rules.required, rules.min]"
@@ -283,7 +283,7 @@
                     <v-text-field
                       label="New Password Again"
                       autocomplete="off"
-                      :append-icon="showPassword ? 'visibility_off' : 'visibility'"
+                      :append-icon="!showPassword ? 'visibility_off' : 'visibility'"
                       :type="showPassword ? 'text' : 'password'"
                       hint="Enter New Password Again"
                       :rules="[rules.required, rules.min, rules.repassword]"

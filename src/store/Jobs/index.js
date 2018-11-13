@@ -70,11 +70,22 @@ export default {
                 postedJobs = [];
                 postedJobs.push(jobsRef.id);
               }
+              payload.pno = data.pno;
+              payload.userName = data.name;
               firestore
                 .collection("users")
                 .doc(payload.user)
                 .update({
                   postedJobs: postedJobs
+                })
+                .then(function() {
+                  fetch("/msg/newjob.php", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                  });
                 });
             });
         })

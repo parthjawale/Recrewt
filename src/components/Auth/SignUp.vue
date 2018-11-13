@@ -38,7 +38,7 @@
             <v-text-field
               v-model="password"
               :rules="[rules.required]"
-              :append-icon="showPassword ? 'visibility_off' : 'visibility'"
+              :append-icon="!showPassword ? 'visibility_off' : 'visibility'"
               :type="showPassword ? 'text' : 'password'"
               name="input-password"
               label="Password"
@@ -52,7 +52,7 @@
             <v-text-field
               v-model="repassword"
               :rules="[rules.required, rules.repassword]"
-              :append-icon="showPassword ? 'visibility_off' : 'visibility'"
+              :append-icon="!showPassword ? 'visibility_off' : 'visibility'"
               :type="showPassword ? 'text' : 'password'"
               name="input-password"
               label="Enter Password Again"
