@@ -412,8 +412,8 @@ export default {
     });
     this.preloaderLoading = true;
     await self.$store.dispatch("getJobs");
-    this.preloaderLoading = false;
     self.jobs = self.availableJobs;
+    this.preloaderLoading = false;
   },
   computed: {
     allSkills() {
