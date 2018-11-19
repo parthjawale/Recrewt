@@ -2,7 +2,6 @@
 <div class="App">
   <v-app>
     <v-toolbar fixed dark flat color="primary" style="z-index:999;">
-
       <v-toolbar-title class="white--text" style="cursor:pointer" @click="$router.push('/')">ReCrewt</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
