@@ -39,7 +39,7 @@
         ></v-text-field>
         <p class="body-2 blue--text text--darken-2 font-weight-regular hover-underline" v-if="!passwordReset" @click="passwordReset = true">Forgot Password?</p>
         <p class="body-2 blue--text text--darken-2 font-weight-regular hover-underline" v-if="passwordReset" @click="passwordReset = false">Go Back.</p>
-        <v-btn :loading="loading" :disabled="loading" type="submit" v-if="!passwordReset">Submit</v-btn>
+        <v-btn :loading="loading" :disabled="loading" @click="login" type="submit" v-if="!passwordReset">Submit</v-btn>
         <v-btn :loading="loading" :disabled="loading" type="submit" @click="resetPassword" v-if="passwordReset">Reset Password</v-btn>
         <v-btn @click="clear" color="red" flat >Clear</v-btn>
       </v-form>
