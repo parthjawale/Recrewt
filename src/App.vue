@@ -1,25 +1,29 @@
 <template>
-<div class="App">
-  <v-app>
-    <v-toolbar fixed dark flat color="primary" style="z-index:999;">
-      <v-toolbar-title class="white--text" style="cursor:pointer" @click="$router.push('/')">ReCrewt</v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-        <v-btn flat icon to="/">
-          <v-icon>home</v-icon>  
-        </v-btn>
-        <v-btn flat v-if="isSignedIn" to="/profile">Profile</v-btn>
-        <v-btn flat v-if="isSignedIn" to="/dashboard">Dashboard</v-btn>
-        <v-btn flat v-if="!isSignedIn" to="/login">Login</v-btn>
-        <v-btn flat v-if="!isSignedIn" to="/signup">Sign Up</v-btn>
-        <v-btn flat v-if="isSignedIn" @click="logout">Logout</v-btn>
-      </v-toolbar-items>
-    </v-toolbar>
-    <main class="toolbar-fixing">
-      <router-view/>
-    </main>
-  </v-app>
-</div>
+  <div class="App">
+    <v-app>
+      <v-toolbar fixed dark flat color="primary" style="z-index:999;">
+        <v-toolbar-title
+          class="white--text"
+          style="cursor:pointer"
+          @click="$router.push('/')"
+        >Recrewt</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn flat icon to="/">
+            <v-icon>home</v-icon>
+          </v-btn>
+          <v-btn flat v-if="isSignedIn" to="/profile">Profile</v-btn>
+          <v-btn flat v-if="isSignedIn" to="/dashboard">Dashboard</v-btn>
+          <v-btn flat v-if="!isSignedIn" to="/login">Login</v-btn>
+          <v-btn flat v-if="!isSignedIn" to="/signup">Sign Up</v-btn>
+          <v-btn flat v-if="isSignedIn" @click="logout">Logout</v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <main class="toolbar-fixing">
+        <router-view />
+      </main>
+    </v-app>
+  </div>
 </template>
 
 <script>

@@ -9,9 +9,7 @@
               <v-toolbar-side-icon @click="drawer=!drawer"></v-toolbar-side-icon>
               <v-list>
                 <v-list-tile>
-                  <v-list-tile-title class="title">
-                    Constraints
-                  </v-list-tile-title>
+                  <v-list-tile-title class="title">Constraints</v-list-tile-title>
                 </v-list-tile>
               </v-list>
             </v-toolbar>
@@ -23,40 +21,73 @@
                 <v-expansion-panel-content ripple>
                   <div slot="header" class="subheading">Job Area</div>
                   <v-radio-group v-model="constraints.type">
-                    <v-radio style="padding-left: 24px;" color="red" :label="skill" :value="skill" v-for="(skill,index) in skills" :key="index"></v-radio>
+                    <v-radio
+                      style="padding-left: 24px;"
+                      color="red"
+                      :label="skill"
+                      :value="skill"
+                      v-for="(skill,index) in skills"
+                      :key="index"
+                    ></v-radio>
                   </v-radio-group>
                 </v-expansion-panel-content>
                 <v-expansion-panel-content ripple>
                   <div slot="header" class="subheading">Duration</div>
                   <v-radio-group v-model="constraints.duration">
-                    <v-radio style="padding-left: 24px;" color="red" v-for="(duration, index) in durations" v-if="duration == 1" :key="index" :label="`${duration} Month`" :value="duration"></v-radio>
-                    <v-radio style="padding-left: 24px;" color="red" v-for="(duration, index) in durations" v-if="duration > 1" :key="index" :label="`${duration} Months`" :value="duration"></v-radio>
+                    <v-radio
+                      style="padding-left: 24px;"
+                      color="red"
+                      v-for="(duration, index) in durations"
+                      v-if="duration == 1"
+                      :key="index"
+                      :label="`${duration} Month`"
+                      :value="duration"
+                    ></v-radio>
+                    <v-radio
+                      style="padding-left: 24px;"
+                      color="red"
+                      v-for="(duration, index) in durations"
+                      v-if="duration > 1"
+                      :key="index"
+                      :label="`${duration} Months`"
+                      :value="duration"
+                    ></v-radio>
                   </v-radio-group>
                 </v-expansion-panel-content>
               </v-expansion-panel>
               <div v-if="constraints.panel[0] || constraints.panel[1]">
-                <v-btn class="text-xs-center mx-auto d-block" color="blue" @click="findJobs" flat>Apply Constraints</v-btn>
-                <v-btn class="text-xs-center mx-auto d-block" color="red" @click="clearConstraints" flat>Clear Constraints</v-btn>
+                <v-btn
+                  class="text-xs-center mx-auto d-block"
+                  color="blue"
+                  @click="findJobs"
+                  flat
+                >Apply Constraints</v-btn>
+                <v-btn
+                  class="text-xs-center mx-auto d-block"
+                  color="red"
+                  @click="clearConstraints"
+                  flat
+                >Clear Constraints</v-btn>
               </div>
               <div class="pl-4">
-                <small>* Jobs posted by you will not be visible. <br>Please go to <router-link tag="a" to="/profile" class="blue--text text--darken-2" style="text-decoration:none;">Profile</router-link> to view those jobs.</small>
+                <small>
+                  * Jobs posted by you will not be visible.
+                  <br />Please go to
+                  <router-link
+                    tag="a"
+                    to="/profile"
+                    class="blue--text text--darken-2"
+                    style="text-decoration:none;"
+                  >Profile</router-link>to view those jobs.
+                </small>
               </div>
             </v-list>
-          </v-flex>  
+          </v-flex>
         </v-layout>
       </v-navigation-drawer>
-      <v-snackbar
-        v-model="snackbar"
-        top
-      >
+      <v-snackbar v-model="snackbar" top>
         {{ response.message }}
-        <v-btn
-          color="pink"
-          flat
-          @click="snackbar = false"
-        >
-          Close
-        </v-btn>
+        <v-btn color="pink" flat @click="snackbar = false">Close</v-btn>
       </v-snackbar>
       <div :class="drawer ? 'navbar-fixing' : '' ">
         <h2 class="display-2 text-xs-center font-weight-thin">Dashboard</h2>
@@ -88,23 +119,21 @@
               </div>
               <small>* Jobs posted by you will not be visible. <br>Please go to <router-link tag="a" to="/profile" class="blue--text text--darken-2" style="text-decoration:none;">Profile</router-link> to view those jobs.</small>
             </div>
-          </v-flex> -->
+          </v-flex>-->
           <v-flex class="pl-3">
             <div class="d-flex align-content-space-between mb-3">
-                <h4 class="title font-weight-regular pb-3">Jobs Available</h4>
-                <div class="text-xs-right" style="width:80px">
-                  <v-btn class="indigo--text text--darken-3" @click="drawer=!drawer">Constraints</v-btn>
-                  <v-btn class="indigo--text text--darken-3" @click="dialog=true">Post New Job</v-btn>
-                </div>
+              <h4 class="title font-weight-regular pb-3">Jobs Available</h4>
+              <div class="text-xs-right" style="width:80px">
+                <v-btn class="indigo--text text--darken-3" @click="drawer=!drawer">Constraints</v-btn>
+                <v-btn class="indigo--text text--darken-3" @click="dialog=true">Post New Job</v-btn>
+              </div>
             </div>
             <v-alert
               :value="alert"
               type="info"
               class="mb-4"
               outline
-            >
-              Congrats on Posting your Job! Please Reload to see changes.
-            </v-alert>
+            >Congrats on Posting your Job! Please Reload to see changes.</v-alert>
             <div class="mt-5 pt-5 text-xs-center" v-if="jobs == null || jobs.length == 0">
               <v-progress-circular
                 :size="55"
@@ -120,27 +149,36 @@
               <v-card class="mb-4" v-for="(jobChild,index) in jobs" :key="index">
                 <v-card-title>
                   <h2 class="font-weight-regular headline">
-                      {{jobChild.name}}
-                    <br>
-                    <span class="grey--text text--darken-2 font-weight-light subheading">{{jobChild.specialisation}}</span>
+                    {{jobChild.name}}
+                    <br />
+                    <span
+                      class="grey--text text--darken-2 font-weight-light subheading"
+                    >{{jobChild.specialisation}}</span>
                   </h2>
                 </v-card-title>
                 <v-card-text>
                   <div class="d-flex align-content-space-between">
                     <p class="text-xs-left">
                       Estimated Duration
-                      <br>
-                      <span class="grey--text text--darken-1" v-if="jobChild.estimatedDuration == 1">{{jobChild.estimatedDuration}} Month</span>
+                      <br />
+                      <span
+                        class="grey--text text--darken-1"
+                        v-if="jobChild.estimatedDuration == 1"
+                      >{{jobChild.estimatedDuration}} Month</span>
 
-                      <span class="grey--text text--darken-1" v-else>{{jobChild.estimatedDuration}} Months</span>              </p>
+                      <span
+                        class="grey--text text--darken-1"
+                        v-else
+                      >{{jobChild.estimatedDuration}} Months</span>
+                    </p>
                     <p class="text-xs-center">
-                      Apply By 
-                      <br>
+                      Apply By
+                      <br />
                       <span class="grey--text text--darken-1">{{jobChild.lastDate}}</span>
                     </p>
                     <p class="text-xs-right">
-                      No Of Positions Available 
-                      <br>
+                      No Of Positions Available
+                      <br />
                       <span class="grey--text text--darken-1">{{jobChild.positionsAvailable}}</span>
                     </p>
                   </div>
@@ -150,15 +188,28 @@
                     <div style="width: 40px;">
                       <v-btn flat color="black" @click="jobChild.show=!jobChild.show">
                         More Details
-                        <v-icon>
-                          {{jobChild.show ? 'expand_less' : 'expand_more'}}
-                        </v-icon>
+                        <v-icon>{{jobChild.show ? 'expand_less' : 'expand_more'}}</v-icon>
                       </v-btn>
                     </div>
                     <div class="text-xs-right" style="width: 40px;">
-                      <v-btn flat color="blue" disabled v-if="jobChild.alreadyApproved">Already Approved</v-btn>
-                      <v-btn flat color="blue" disabled v-if="jobChild.alreadyApplied">Already Applied</v-btn>
-                      <v-btn flat color="blue" v-if="!jobChild.alreadyApproved && !jobChild.alreadyApplied" @click="openApplyDialog(jobChild.jobId, index)">Apply Now</v-btn>
+                      <v-btn
+                        flat
+                        color="blue"
+                        disabled
+                        v-if="jobChild.alreadyApproved"
+                      >Already Approved</v-btn>
+                      <v-btn
+                        flat
+                        color="blue"
+                        disabled
+                        v-if="jobChild.alreadyApplied"
+                      >Already Applied</v-btn>
+                      <v-btn
+                        flat
+                        color="blue"
+                        v-if="!jobChild.alreadyApproved && !jobChild.alreadyApplied"
+                        @click="openApplyDialog(jobChild.jobId, index)"
+                      >Apply Now</v-btn>
                     </div>
                   </v-layout>
                 </v-card-actions>
@@ -166,14 +217,13 @@
                   <v-card-text v-show="jobChild.show">
                     <p class="px-2">
                       Purpose: {{jobChild.purpose}}
-                      <br>
-                    {{jobChild.description}}
+                      <br />
+                      {{jobChild.description}}
                     </p>
                   </v-card-text>
                 </v-slide-y-transition>
               </v-card>
             </div>
-            
           </v-flex>
         </v-layout>
         <v-dialog v-model="dialog" persistent max-width="600px">
@@ -186,18 +236,10 @@
                 <v-form ref="addJobForm" @submit.prevent="addJob">
                   <v-layout wrap>
                     <v-flex xs12 sm6>
-                      <v-text-field
-                        label="Name/Title"
-                        v-model="job.name"
-                        :rules="[rules.required]"
-                      ></v-text-field>
+                      <v-text-field label="Name/Title" v-model="job.name" :rules="[rules.required]"></v-text-field>
                     </v-flex>
                     <v-flex xs12 sm6>
-                      <v-text-field
-                        label="Purpose"
-                        v-model="job.purpose"
-                        :rules="[rules.required]"
-                      ></v-text-field>
+                      <v-text-field label="Purpose" v-model="job.purpose" :rules="[rules.required]"></v-text-field>
                     </v-flex>
                     <v-flex xs12 sm6>
                       <v-autocomplete
@@ -257,7 +299,12 @@
                           prepend-icon="event"
                           readonly
                         ></v-text-field>
-                        <v-date-picker :min="new Date().toISOString().substr(0, 10)" v-model="date" no-title @input="dateMenu = false"></v-date-picker>
+                        <v-date-picker
+                          :min="new Date().toISOString().substr(0, 10)"
+                          v-model="date"
+                          no-title
+                          @input="dateMenu = false"
+                        ></v-date-picker>
                       </v-menu>
                     </v-flex>
                     <v-flex xs12>
@@ -265,7 +312,7 @@
                         label="Job Description"
                         v-model="job.description"
                         :rules="[rules.required]"
-                        rows="1"              
+                        rows="1"
                         auto-grow
                         hint="Please Enter the Job Description"
                         persistent-hint
@@ -278,9 +325,25 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" flat @click.native="dialogClosed" :disabled="loading">Close</v-btn>
-              <v-btn color="blue darken-1" flat @click.native="clearJobForm" :disabled="loading">Clear Fields</v-btn>
-              <v-btn color="blue darken-1" flat @click.native="addJob" :loading = "loading" :disabled="loading">Save</v-btn>
+              <v-btn
+                color="blue darken-1"
+                flat
+                @click.native="dialogClosed"
+                :disabled="loading"
+              >Close</v-btn>
+              <v-btn
+                color="blue darken-1"
+                flat
+                @click.native="clearJobForm"
+                :disabled="loading"
+              >Clear Fields</v-btn>
+              <v-btn
+                color="blue darken-1"
+                flat
+                @click.native="addJob"
+                :loading="loading"
+                :disabled="loading"
+              >Save</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -288,14 +351,16 @@
         <v-dialog v-model="applyDialog.switch" persistent max-width="600px" v-if="jobs != null">
           <v-card>
             <v-card-title class="text-xs-center">
-              <h2 class="headline text-capitalize">Apply For {{jobs[applyDialog.index].name}} Job</h2>
+              <h2 class="headline text-capitalize">Apply For Job</h2>
             </v-card-title>
             <v-card-text>
               <v-container grid-list-md>
-                <v-form @submit.prevent="" ref="applyForm">
+                <v-form @submit.prevent ref="applyForm">
                   <v-layout row wrap>
                     <v-flex xs12>
-                      <h3 class="subheading font-weight-subheading">Answer this question to continue.</h3>
+                      <h3
+                        class="subheading font-weight-subheading"
+                      >Answer this question to continue.</h3>
                       <v-textarea
                         rows="1"
                         auto-grow
@@ -303,7 +368,7 @@
                         counter="100"
                         hint="Please do not exceed 100 Characters."
                         :rules="[rules.required, rules.question]"
-                        value=""
+                        value
                         v-model="whyQuestion"
                         persistent-hint
                       ></v-textarea>
@@ -314,8 +379,19 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" flat @click.native="closeApplyForm" :disabled="loading">Cancel</v-btn>
-              <v-btn color="blue darken-1" flat @click.native="applyForJob" :loading = "loading" :disabled="loading">Apply</v-btn>
+              <v-btn
+                color="blue darken-1"
+                flat
+                @click.native="closeApplyForm"
+                :disabled="loading"
+              >Cancel</v-btn>
+              <v-btn
+                color="blue darken-1"
+                flat
+                @click.native="applyForJob"
+                :loading="loading"
+                :disabled="loading || whyQuestion =='' "
+              >Apply</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -359,14 +435,14 @@ export default {
     whyQuestion: "",
     items: ["Design", "Web Development", "Content Writing"],
     job: {
-      name: null,
-      purpose: null,
+      name: "",
+      purpose: "",
       show: false,
-      specialisation: null,
-      otherSkills: null,
-      positionsAvailable: null,
-      estimatedDuration: null,
-      description: null
+      specialisation: "",
+      otherSkills: "",
+      positionsAvailable: "",
+      estimatedDuration: "",
+      description: ""
     },
     date: new Date().toISOString().substr(0, 10),
     dateFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
@@ -491,10 +567,10 @@ export default {
       if (!this.response.error) this.closeApplyForm();
     },
     closeApplyForm() {
+      this.whyQuestion = "";
       this.applyDialog.switch = false;
       this.applyDialog.index = 0;
       this.applyDialog.job = null;
-      this.$refs.applyForm.reset();
       // console.clear();
     },
     openApplyDialog(param, index) {
