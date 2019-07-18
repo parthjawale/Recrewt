@@ -33,21 +33,21 @@
                 </v-expansion-panel-content>
                 <v-expansion-panel-content ripple>
                   <div slot="header" class="subheading">Duration</div>
-                  <v-radio-group v-model="constraints.duration">
+                  <v-radio-group v-model="constraints.duration" v-if="duration == 1">
                     <v-radio
                       style="padding-left: 24px;"
                       color="red"
                       v-for="(duration, index) in durations"
-                      v-if="duration == 1"
                       :key="index"
                       :label="`${duration} Month`"
                       :value="duration"
                     ></v-radio>
+                  </v-radio-group>
+                  <v-radio-group v-model="constraints.duration" v-else>
                     <v-radio
                       style="padding-left: 24px;"
                       color="red"
                       v-for="(duration, index) in durations"
-                      v-if="duration > 1"
                       :key="index"
                       :label="`${duration} Months`"
                       :value="duration"
@@ -470,12 +470,11 @@ export default {
     var self = this;
     this.preloaderLoading = true;
     var userP;
+    await self.$store.dispatch("getJobs");
     auth.onAuthStateChanged(function(user) {
       if (!user) {
         self.$router.push("/login");
-      }
-      if (user) {
-        self.preloaderLoading = true;
+      } else {
         firestore
           .collection("users")
           .doc(user.uid)
@@ -532,11 +531,9 @@ export default {
             self.preloaderLoading = false;
           });
       }
+      self.jobs = self.availableJobs;
+      self.preloaderLoading = false;
     });
-    this.preloaderLoading = true;
-    await self.$store.dispatch("getJobs");
-    self.jobs = self.availableJobs;
-    this.preloaderLoading = false;
   },
   computed: {
     allSkills() {
